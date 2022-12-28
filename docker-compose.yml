@@ -20,6 +20,7 @@ services:
     env_file: ./.env
     ports:
       - $NODE_LOCAL_PORT:$NODE_DOCKER_PORT
+      - 8081:8081
     environment:
       - DB_HOST=mysqldb
       - DB_USER=$MYSQLDB_USER
