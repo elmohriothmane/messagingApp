@@ -7,6 +7,8 @@
   },
   "dependencies": {
     "axios": "^1.2.1",
+    "bcryptjs": "^2.4.3",
+    "compression": "1.7.4",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.0.3",
@@ -15,7 +17,6 @@
     "express-session": "^1.17.3",
     "express-sse": "^0.5.1",
     "faker": "^5.5.3",
-    "compression": "1.7.4",
     "http-errors": "~1.6.3",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.4",

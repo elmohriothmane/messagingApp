@@ -29,6 +29,12 @@ services:
       - DB_PORT=$MYSQLDB_DOCKER_PORT
     stdin_open: true
     tty: true
+  
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8090:8080
 
 volumes: 
   db:

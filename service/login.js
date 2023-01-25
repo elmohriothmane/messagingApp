@@ -1,20 +1,18 @@
 const { Utilisateur } = require("../models");
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const bcryptjs = require("bcryptjs");
 const secret = process.env.JWT_SECRET;
-const loginUtilisateur = (req, res, next) => {
-    const { email, password } = req.body;
+const loginUtilisateur =  (req, res, next) => {
+    const { email,password } = req.body;
     Utilisateur.findOne({
       where: {
-        email: email,
-        password: password, 
-      },
-    }).then((data) => {
-    if (!data) {
-  return res.render("utilisateurLogin", { error: "Email ou mot de passe incorrect" });
-    } else {
+        email: email      }
+    }).then(async (data) => {
+      
+    if (data && await(bcryptjs.compare(password, data.password))) {
       const payload = {
+        id: data.idUtilisateur,
         username: data.email,
-        type: 'utilisateur', 
         expiration: Date.now() + parseInt(10000000000),
       }; 
       const token = jwt.sign(JSON.stringify(payload), secret);
@@ -24,7 +22,10 @@ const loginUtilisateur = (req, res, next) => {
           secure: false,
         })
         res.redirect("/utilisateur/chats");
+    } else {
+      return res.render("utilisateurLogin", { error: "Email ou mot de passe incorrect" });
     }
+    
     });
 }
 module.exports =  loginUtilisateur;

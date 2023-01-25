@@ -20,6 +20,8 @@ var usersRouter = require("./routes/users");
 var conseillerRouter = require("./routes/conseiller");
 var utilisateurRouter = require("./routes/utlisateur");
 var administeurRouter = require("./routes/administrateur");
+const bookingRouter = require("./routes/booking");
+
 var app = express();
 
 const server = http.createServer(app);
@@ -40,6 +42,7 @@ app.get("/stream", (req, res, next) => {
 app.use("/administrateur", administeurRouter);
 app.use("/utilisateur", utilisateurRouter);
 app.use("/conseiller", conseillerRouter);
+app.use("/booking", bookingRouter);
 app.get("/events", events);
 app.post("/send-event", sendEvent);
 app.use("/", indexRouter);

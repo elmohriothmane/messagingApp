@@ -6,9 +6,15 @@ router.get('/', function(req, res, next) {
 });
 router.get("/logout", (req, res) => {
   if (req.cookies["jwt"]) {
+    res.clearCookie("jwt");
     res.redirect('/')
   } else {
     res.redirect("/");
   }
+});
+router.get('/chatbot', async(req, res, next) => {
+  
+  res.render('chatbot');
+
 });
 module.exports = router;

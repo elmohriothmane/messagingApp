@@ -1,0 +1,508 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	</head>
+<style>
+#chat-circle {
+  width: 50px;
+  height: 50px;
+  background-color: #0084ff;
+  border-radius: 25px;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+
+#chat-circle i {
+  color: white;
+  font-size: 25px;
+}
+
+
+#chat-window {
+  display: none;
+  position: fixed;
+  bottom: 150px;
+  right: 20px;
+  width: 500px;
+  height: 400px;
+  background-color: #f2f2f2;
+  border-radius: 10px;
+  box-shadow: 2px 2px 10px #ccc;
+}
+
+#chat-header {
+  background-color: #0084ff;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+  font-size: 18px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+
+
+#chat-messages {
+  height: 300px;
+  overflow-y: scroll;
+}
+
+#chat-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+#chat-send {
+  width: 100%;
+  padding: 10px;
+  background-color: #0084ff;
+  color: #fff;
+  cursor: pointer;
+}
+	#show-circle {
+		display: none;
+	}
+
+	.chat-bubble {
+  padding: 10px;
+  margin: 30px 0;
+  border-radius: 10px;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.chat-bubble-bot {
+  background-color: #36ae44;
+  color: #fff;
+  float: left;
+}
+
+.chat-bubble-user {
+  background-color: #0084ff;
+  color: #fff;
+  float: right;
+}
+	
+</style>
+<body>
+	<div id="chat-circle">
+		<i class="fa fa-comment"></i>
+	</div>
+	<div id="chat-window">
+		<div id="chat-header">Chatbot</div>
+		<div id="chat-content">
+			<div id="chat-messages">
+				<div class='chat-bubble chat-bubble-bot'>Hello je suis Chatty, en quoi pourrais-je vous aider ?</div>
+			</div>
+			<input id="chat-input">
+			<button id="chat-send">Envoyer</button>
+		</div>
+	</div>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+	$("#chat-circle").click(function(){
+		
+			
+			$("#chat-window").toggle();
+		
+		
+	});
+	
+
+	var currentWorkflow = 1;
+	var lastServiceDate;
+	var mileage;
+	function isValidDate(dateString) {
+		var regEx = /^\d{2}\/\d{2}\/\d{4}$/;
+		if(!dateString.match(regEx)) return false;
+		if(dateString.match(regEx)) return true;
+		
+	}
+	function scrollToBottom() {
+		var objDiv = document.getElementById("chat-messages");
+		objDiv.scrollTop = objDiv.scrollHeight;
+	}
+	
+	$("#chat-send").click(function(e) {
+		e.preventDefault();
+		var userInput = $("#chat-input").val();
+		$("#chat-messages").append("<div class='chat-bubble chat-bubble-user'>"+userInput+"</div>"); 
+		scrollToBottom();
+
+		$("#chat-input").val("");
+		
+	  
+		// entretien de vehicule
+
+		if (currentWorkflow === 1) {
+			if (/entretien|entretenir/.test(userInput.toLowerCase())) {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Quelle est la date de votre dernier entretien?</div>");
+				currentWorkflow = 2;
+				scrollToBottom();
+			} 
+
+			else if (/information/.test(userInput.toLowerCase())) {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Quelle est le type d'usage ?</div>");
+				currentWorkflow = 5;
+				scrollToBottom();
+			} 
+
+			else if (/contact|contacter/.test(userInput.toLowerCase())) {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Quelle type d'information souhaitez vous ?</div>");
+				currentWorkflow = 9;
+				scrollToBottom();
+			} 
+			else {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Déoslé je n'ai pas compris votre question</div>");
+				scrollToBottom();
+			}
+
+			
+			
+	  	} 
+		else if (currentWorkflow === 2) {
+			if (isValidDate(userInput)) {
+				lastServiceDate = new Date(userInput);
+				var twoYearsAgo = new Date();
+				lastServiceDate.setFullYear(lastServiceDate.getFullYear());
+				twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+				
+				if (lastServiceDate < twoYearsAgo) {
+					$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Il est temps de prendre rendez-vous pour un entretien. Voulez-vous prendre rendez-vous maintenant?</div>");
+
+					currentWorkflow = 4;
+					scrollToBottom();
+				} else if (lastServiceDate > twoYearsAgo) {
+					$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Combien de kilomètres avez-vous parcourus depuis votre dernier entretien?</div>");
+					currentWorkflow = 3;
+					scrollToBottom();
+				} else {
+					$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Désolé, je n'ai pas compris votre réponse.</div>")
+					scrollToBottom();
+				}
+			} else {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Désolé, je n'ai pas compris votre réponse. Veuillez entrer une date valide au format jj/mm/aaaa</div>");
+				scrollToBottom();
+			}
+		}
+	  
+		else if (currentWorkflow === 3) {
+			if (!isNaN(userInput)) {
+				mileage = parseInt(userInput);
+				if (mileage >= 10000) {
+					$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Il est temps de prendre rendez-vous pour un entretien. Voulez-vous prendre rendez-vous maintenant?</div>");
+					currentWorkflow = 4;
+					scrollToBottom();
+				} else if(mileage < 10000) {
+					
+					$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Souhaitez vous quand meme prendre rendez-vous ?</div>");
+					currentWorkflow = 4;
+					scrollToBottom();
+					
+				} else {
+					$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Déoslé je n'ai pas compris votre question</div>");
+					scrollToBottom();
+				}
+			} 
+			
+			else {
+				
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Désolé, je n'ai pas compris votre réponse. Veuillez reeasayer</div>");
+				scrollToBottom();
+			}
+		} 
+
+		else if (currentWorkflow === 4) {
+			
+			if (/oui/.test(userInput.toLowerCase())) {
+		
+				var availableDates = [];
+				$.ajax({
+					url: '/booking/chats/entretien/false',
+					type: 'GET',
+					success: function(data) {
+						var appointmentsToExclude = data;
+						var today = new Date();
+						var nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+					
+						for (var i = today.getTime(); i <= nextWeek.getTime(); i += 24 * 60 * 60 * 1000) {
+							var date = new Date(i);
+							var dateString = date.toISOString().substring(0, 10);
+							
+							var found = appointmentsToExclude.find(function(appointment) {
+								return appointment.bookingDate === dateString;
+							});
+							if (!found) {
+								availableDates.push(convertInverseDateFormat(dateString));
+							}
+						}
+						
+						$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>choisissez une date d'entretien "+availableDates+"</div>");
+						scrollToBottom();
+						return availableDates;
+					}
+					
+				});
+				
+				
+			} else if (/non/.test(userInput.toLowerCase())) {
+
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Si vous souhaitez autre chose faites moi signe</div>");
+				currentWorkflow = 1;
+				scrollToBottom();
+
+			} else if (isValidDate(userInput)) {
+
+				postRdv(convertDateFormat(userInput),'entretien') 
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>On vous confirme le rdv a cette date "+userInput+"</div>");
+				currentWorkflow = 1;
+				scrollToBottom();
+
+			} else {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Déoslé je n'ai pas compris votre question</div>");
+				scrollToBottom();
+			}
+		}
+		else if (currentWorkflow === 5)
+		{
+			if (/routier/.test(userInput.toLowerCase())) {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>On vous propose un essai routier souhaitez vous continuer ?</div>");
+				currentWorkflow = 6;
+				scrollToBottom();
+
+			} else if (/tout terrain|tt|terrain/.test(userInput.toLowerCase())) {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>On vous propose un essai tout terrain souhaitez vous continuer ?</div>");
+				currentWorkflow = 7;
+				scrollToBottom();
+
+			} else if (/sportif|sport/.test(userInput.toLowerCase())) {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>On vous propose un essai sportif souhaitez vous continuer ?</div>");
+				currentWorkflow = 8;
+				scrollToBottom();
+
+			} else {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Je nai pas compris</div>");
+				scrollToBottom();
+			}
+		}
+
+		else if (currentWorkflow === 6) {
+			
+			if (/oui/.test(userInput.toLowerCase())) {
+		
+				var availableDates = [];
+				$.ajax({
+					url: '/booking/chats/try/road/false',
+					type: 'GET',
+					success: function(data) {
+						var appointmentsToExclude = data;
+						var today = new Date();
+						var nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+					
+						for (var i = today.getTime(); i <= nextWeek.getTime(); i += 24 * 60 * 60 * 1000) {
+							var date = new Date(i);
+							var dateString = date.toISOString().substring(0, 10);
+							
+							var found = appointmentsToExclude.find(function(appointment) {
+								return appointment.bookingDate === dateString;
+							});
+							if (!found) {
+								availableDates.push(convertInverseDateFormat(dateString));
+							}
+						}
+						
+						$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>choisissez une date d'essai routier "+availableDates+"</div>");
+						return availableDates;
+						scrollToBottom();
+					}
+					
+				});
+				
+				
+			} else if (/non/.test(userInput.toLowerCase())) {
+
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Si vous souhaitez autre chose faites moi signe</div>");
+				currentWorkflow = 1;
+				scrollToBottom();
+
+			} else if (isValidDate(userInput)) {
+
+				postRdv(convertDateFormat(userInput),'road') 
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>On vous confirme le rdv d'essai routier a cette date "+userInput+"</div>");
+				currentWorkflow = 1;
+				scrollToBottom();
+
+			} else {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Déoslé je n'ai pas compris votre question</div>");
+				scrollToBottom();
+			}
+		}
+
+		else if (currentWorkflow === 7) {
+			
+			if (/non/.test(userInput.toLowerCase())) {
+		
+				var availableDates = [];
+				$.ajax({
+					url: '/booking/chats/try/at/false',
+					type: 'GET',
+					success: function(data) {
+						var appointmentsToExclude = data;
+						var today = new Date();
+						var nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+					
+						for (var i = today.getTime(); i <= nextWeek.getTime(); i += 24 * 60 * 60 * 1000) {
+							var date = new Date(i);
+							var dateString = date.toISOString().substring(0, 10);
+							
+							var found = appointmentsToExclude.find(function(appointment) {
+								return appointment.bookingDate === dateString;
+							});
+							if (!found) {
+								availableDates.push(convertInverseDateFormat(dateString));
+							}
+						}
+						
+						$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>choisissez une  date d'essai tout terrain "+availableDates+"</div>");
+						return availableDates;
+						scrollToBottom();
+					}
+					
+				});
+				
+				
+			} else if (/non/.test(userInput.toLowerCase())){
+
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Si vous souhaitez autre chose faites moi signe</div>");
+				currentWorkflow = 1;
+				scrollToBottom();
+
+			} else if (isValidDate(userInput)) {
+
+				postRdv(convertDateFormat(userInput),'AT') 
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>On vous confirme le rdv d'essai tout terrain a cette date "+userInput+"</div>");
+				currentWorkflow = 1;
+				scrollToBottom();
+
+			} else {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Déoslé je n'ai pas compris votre question</div>");
+				scrollToBottom();
+			}
+		}
+
+		else if (currentWorkflow === 8) {
+			
+			if (/oui/.test(userInput.toLowerCase())) {
+		
+				var availableDates = [];
+				$.ajax({
+					url: '/booking/chats/try/sport/false',
+					type: 'GET',
+					success: function(data) {
+						var appointmentsToExclude = data;
+						var today = new Date();
+						var nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+					
+						for (var i = today.getTime(); i <= nextWeek.getTime(); i += 24 * 60 * 60 * 1000) {
+							var date = new Date(i);
+							var dateString = date.toISOString().substring(0, 10);
+							
+							var found = appointmentsToExclude.find(function(appointment) {
+								return appointment.bookingDate === dateString;
+							});
+							if (!found) {
+								availableDates.push(convertInverseDateFormat(dateString));
+							}
+						}
+						
+						$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>choisissez une date d'essai sportif "+availableDates+"</div>");
+						return availableDates;
+						scrollToBottom();
+					}
+					
+				});
+				
+				
+			} else if (/non/.test(userInput.toLowerCase())) {
+
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Si vous souhaitez autre chose faites moi signe</div>");
+				currentWorkflow = 1;
+				scrollToBottom();
+
+			} else if (isValidDate(userInput)) {
+
+				postRdv(convertDateFormat(userInput),'sport') 
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>On vous confirme le rdv d'essai sportif a cette date"+ userInput +"</div>");
+				currentWorkflow = 1;
+				scrollToBottom();
+
+			} else {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Déoslé je n'ai pas compris votre question</div>");
+				scrollToBottom();
+			}
+		}
+
+		
+
+		else if (currentWorkflow === 9 )
+		{
+			if (/email|mail/.test(userInput.toLowerCase())) {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Voici le mail de contact contact@contact.fr</div>");
+				currentWorkflow = 1;
+				scrollToBottom();
+			} else if (/numero|numéro|telephone|téléphone/.test(userInput.toLowerCase())) {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'>Voici le numero de contact 0123456789</div>");
+				currentWorkflow = 1;
+				scrollToBottom();
+			} else {
+				$("#chat-messages").append("<div class='chat-bubble chat-bubble-bot'> </div>");
+				scrollToBottom();
+			}
+		}
+
+	  
+	})
+	  
+
+	function convertDateFormat(date) {
+		var dateArray = date.split("/");
+		return dateArray[2] + "-" + dateArray[1] + "-" + dateArray[0];
+	}
+
+	function convertInverseDateFormat(date) {
+		var dateArray = date.split("-");
+		return dateArray[2] + "/" + dateArray[1] + "/" + dateArray[0];
+	}
+
+	
+	function postRdv(bookingDate,type) {
+		$.ajax({
+			url : '/booking/new',
+			type: 'POST',
+			async: false,
+			data : {
+				bookingDate: bookingDate,
+				type: type,
+				isAvailable: false,
+
+			}, 
+			success: function (data, status, xhr) {
+				console.log(data);
+			}
+		});
+	}
+
+</script>
+
+</html>

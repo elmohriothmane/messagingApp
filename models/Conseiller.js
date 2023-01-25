@@ -2,6 +2,8 @@
 
 // eslint-disable-next-line no-unused-vars
 const { Model } = require('sequelize')
+const bcryptjs = require('bcryptjs')
+
 
 module.exports = (sequelize, DataTypes) => {
   const Conseiller = sequelize.define(
@@ -35,5 +37,20 @@ module.exports = (sequelize, DataTypes) => {
       },
     }
   );
+
+  const hashPassword = async(conseiller) => {
+    conseiller.password = await bcryptjs.hash(
+        conseiller.password,
+        await bcryptjs.genSalt(10)
+    );
+  };
+
+  Conseiller.addHook("beforeCreate", hashPassword);
+  Conseiller.addHook("beforeUpdate", async(conseiller, { fields }) => {
+    if (fields.includes("password")) {
+        await hashPassword(conseiller);
+    }
+  });
+
   return Conseiller;
 }
